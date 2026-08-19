@@ -1,0 +1,1814 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#040308">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Stardos+Stencil:wght@700&display=swap" rel="stylesheet">
+<title>K0NK0S: VIDJ0</title>
+<style>
+  :root{
+    --bg:#040308;
+    --panel:#08070d;
+    --line:#1a1728;
+    --accent:#ff2fb0;
+    --accent2:#2ff0ff;
+    --text:#d8d6e2;
+    --muted:#635f76;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{
+    margin:0;height:100%;background:var(--bg);color:var(--text);
+    font-family:'Courier New',ui-monospace,monospace;
+    overflow:hidden;
+    overscroll-behavior:none;
+    -webkit-text-size-adjust:100%;
+  }
+  #app{ display:flex; height:100%; width:100%; height:100dvh; }
+  #stage{
+    flex:1; position:relative; display:flex;
+    align-items:center; justify-content:center;
+    background:#000; min-width:0;
+  }
+  canvas#out{
+    max-width:100%; max-height:100%; width:auto;height:auto;
+    display:block; box-shadow:0 0 60px rgba(255,47,176,.15);
+  }
+  #startOverlay{
+    position:absolute;inset:0;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    gap:16px;
+    background:radial-gradient(circle at 50% 40%, #0e0a18 0%, #030209 70%);
+    z-index:5;
+    text-align:center;
+    padding:20px;
+  }
+  #startOverlay h1{
+    font-family:'Stardos Stencil', 'Arial Black', sans-serif;
+    font-weight:700;
+    font-size:52px;letter-spacing:8px;color:var(--accent2);
+    text-transform:uppercase;margin:0;
+    text-shadow:0 0 30px rgba(47,240,255,.5), 0 0 60px rgba(255,47,176,.25);
+    line-height:1.1;
+  }
+  #startOverlay p{color:var(--muted);font-size:12px;max-width:340px;text-align:center;margin:0;}
+  .btnstack{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;}
+  .bigbtn{
+    background:linear-gradient(135deg,var(--accent),#8600e0);
+    color:#fff;border:none;padding:16px 26px;border-radius:2px;
+    font-family:inherit;letter-spacing:2px;text-transform:uppercase;font-size:12px;
+    cursor:pointer;box-shadow:0 0 25px rgba(255,47,176,.35);
+    touch-action:manipulation; min-height:48px;
+  }
+  .bigbtn.secondary{
+    background:linear-gradient(135deg,#100e1e,#1c1838);
+    box-shadow:0 0 25px rgba(47,240,255,.15);
+    border:1px solid var(--accent2);color:var(--accent2);
+  }
+  .bigbtn:hover{filter:brightness(1.15);}
+  #panel{
+    width:280px; flex-shrink:0; background:var(--panel);
+    border-left:1px solid var(--line); padding:16px; overflow-y:auto;
+    -webkit-overflow-scrolling:touch;
+  }
+  #panel h2{
+    font-size:11px;letter-spacing:4px;color:var(--accent2);
+    margin:0 0 14px 0;text-transform:uppercase;font-weight:400;
+    border-bottom:1px solid var(--line);padding-bottom:10px;
+  }
+  .group{margin-bottom:18px;}
+  .row{ display:flex;align-items:center;justify-content:space-between; margin-bottom:6px; }
+  label{font-size:10px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;}
+  .val{font-size:10px;color:var(--accent2);}
+  input[type=range]{
+    width:100%; -webkit-appearance:none; appearance:none;
+    height:4px;background:var(--line);border-radius:2px;outline:none;
+    margin:6px 0 14px 0;
+    touch-action:manipulation;
+  }
+  input[type=range]::-webkit-slider-thumb{
+    -webkit-appearance:none;width:16px;height:16px;border-radius:50%;
+    background:var(--accent);cursor:pointer;box-shadow:0 0 8px var(--accent);
+  }
+  input[type=range]::-moz-range-thumb{
+    width:16px;height:16px;border-radius:50%;border:none;
+    background:var(--accent);cursor:pointer;box-shadow:0 0 8px var(--accent);
+  }
+  .btnrow{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:6px;}
+  .toggle{
+    flex:1;min-width:70px;min-height:40px;
+    background:#0c0a16;border:1px solid var(--line);color:var(--muted);
+    padding:10px 6px;font-size:10px;letter-spacing:1px;text-transform:uppercase;
+    cursor:pointer;border-radius:2px;text-align:center;
+    touch-action:manipulation;
+  }
+  .toggle.on{
+    background:rgba(255,47,176,.15);border-color:var(--accent);color:var(--accent);
+    box-shadow:0 0 10px rgba(255,47,176,.2) inset;
+  }
+  .toggle.disabled{ opacity:.35; pointer-events:none; }
+  .lfoBadge{
+    display:inline-block;margin-left:4px;font-size:9px;color:var(--accent2);
+    letter-spacing:0;
+  }
+  select{
+    width:100%;background:#0c0a16;border:1px solid var(--line);color:var(--text);
+    padding:10px 8px;font-family:inherit;font-size:11px;border-radius:2px;margin-bottom:4px;
+    min-height:40px;
+  }
+  #panel::-webkit-scrollbar{width:6px;}
+  #panel::-webkit-scrollbar-thumb{background:var(--line);border-radius:3px;}
+  .hint{font-size:9px;color:var(--muted);line-height:1.5;margin-top:10px;}
+  .status{
+    position:absolute;top:12px;left:12px;
+    font-size:10px;letter-spacing:2px;color:var(--muted);
+    display:flex;align-items:center;gap:6px;z-index:4;
+  }
+  .dot{width:6px;height:6px;border-radius:50%;background:#333;}
+  .dot.live{background:#ff3355;box-shadow:0 0 6px #ff3355;animation:pulse 1.4s infinite;}
+  @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.3;}}
+  .subgroup{display:none;}
+  .subgroup.active{display:block;}
+
+  .filebtn{
+    display:block;width:100%;text-align:center;
+    background:#0c0a16;border:1px dashed var(--line);color:var(--muted);
+    padding:12px;font-size:10px;letter-spacing:1px;text-transform:uppercase;
+    border-radius:2px;cursor:pointer;margin-bottom:10px;
+    touch-action:manipulation; min-height:40px;
+  }
+  .filebtn:hover{border-color:var(--accent2);color:var(--accent2);}
+  #layerFile{display:none;}
+  #layerList{display:flex;flex-direction:column;gap:10px;}
+  .layerRow{
+    background:#0c0a16;border:1px solid var(--line);border-radius:3px;padding:8px;
+  }
+  .layerHead{
+    display:flex;align-items:center;gap:6px;margin-bottom:6px;
+    flex-wrap:wrap;
+  }
+  .layerName{
+    flex:1;font-size:10px;color:var(--text);
+    overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+    min-width:60px;
+  }
+  button.mini{
+    background:#120f20;border:1px solid var(--line);color:var(--muted);
+    font-size:9px;padding:7px 9px;border-radius:2px;cursor:pointer;
+    letter-spacing:1px;text-transform:uppercase;
+    touch-action:manipulation; min-height:32px;
+  }
+  button.mini.off{color:#4a4560;}
+  button.mini.on{color:var(--accent);border-color:var(--accent);}
+  .layerRow select{margin-bottom:0;font-size:10px;padding:8px;}
+  .layerRow input[type=range]{margin:8px 0;}
+
+  @media(max-width:700px){
+    #app{flex-direction:column;}
+    #panel{
+      width:100%; flex:1; min-height:0;
+      border-left:none;border-top:1px solid var(--line);
+      padding:14px 14px calc(14px + env(safe-area-inset-bottom));
+    }
+    #stage{ flex:0 0 auto; height:46vh; height:46dvh; }
+    select, .layerRow select{ font-size:16px; }
+    label{ font-size:11px; }
+    .val{ font-size:11px; }
+    .toggle{ font-size:11px; padding:12px 6px; }
+    button.mini{ padding:9px 11px; font-size:10px; }
+    .status{ font-size:11px; }
+    #startOverlay h1{ font-size:34px; letter-spacing:4px; }
+  }
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="stage">
+    <div class="status"><div class="dot" id="liveDot"></div><span id="statusText">OFFLINE</span></div>
+    <canvas id="out" width="960" height="720"></canvas>
+    <div id="startOverlay">
+      <h1>K0NK0S: VIDJ0</h1>
+      <p>A live video feedback loop instrument. Use your camera, or skip it and run entirely on a built-in generator — no camera permission needed. You can layer in images and video clips either way.</p>
+      <div class="btnstack">
+        <button class="bigbtn" id="startCamBtn">Start With Camera</button>
+        <button class="bigbtn secondary" id="startGenBtn">Start Without Camera</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="panel">
+    <h2>Source</h2>
+    <div class="group">
+      <select id="sourceMode">
+        <option value="camera">Camera</option>
+        <option value="generator">Generator (No Camera)</option>
+      </select>
+
+      <div id="cameraOpts" class="subgroup">
+        <div class="btnrow">
+          <button class="toggle on" id="facingFrontBtn">Front Cam</button>
+          <button class="toggle" id="facingBackBtn">Back Cam</button>
+        </div>
+        <select id="cameraSelect">
+          <option value="">Default Camera</option>
+        </select>
+        <div class="btnrow">
+          <button class="toggle" id="cameraRefreshBtn">Refresh List</button>
+          <button class="toggle on" id="mirrorToggle">Mirror</button>
+        </div>
+        <div class="hint">Front/Back uses your device's facing-camera switch directly — the most reliable way to get the rear lens on phones. The dropdown lists specific camera hardware if you have more than two, or want a particular one by name (names appear once you've granted permission). Camera and Device Audio run as two completely separate streams, so the back camera works fine alongside Device Audio — see the Audio section for its own browser support notes.</div>
+      </div>
+
+      <div id="genOpts" class="subgroup">
+        <select id="genPattern">
+          <option value="plasma">Plasma</option>
+          <option value="orbits">Orbits</option>
+          <option value="noise">Noise Grid</option>
+          <option value="rays">Radiating Rays</option>
+          <option value="flow">Flow Field</option>
+          <option value="kaleido">Kaleidoscope</option>
+          <option value="ca">Cellular Automata</option>
+          <option value="starfield">Starfield Tunnel</option>
+          <option value="metaballs">Metaballs</option>
+        </select>
+        <div class="row"><label>Gen Speed</label><span class="val" id="v_genSpeed">1.0x</span></div>
+        <input type="range" id="genSpeed" min="10" max="400" value="100">
+      </div>
+
+      <div class="btnrow">
+        <button class="toggle" id="freezeToggle">Freeze</button>
+        <button class="toggle" id="clearBtn">Clear Buffer</button>
+      </div>
+      <div class="btnrow">
+        <button class="toggle" id="srcRotateBtn">Rotate: 0&#176;</button>
+      </div>
+    </div>
+
+    <h2>Audio</h2>
+    <div class="group">
+      <div class="btnrow">
+        <button class="toggle" id="micToggle">Mic</button>
+        <button class="toggle" id="sysAudioToggle">Device Audio</button>
+      </div>
+      <select id="micSelect">
+        <option value="">Default Microphone</option>
+      </select>
+      <div class="row"><label>Input Level</label><span class="val" id="v_audioLevel">0%</span></div>
+      <div style="height:4px;background:var(--line);border-radius:2px;overflow:hidden;margin-bottom:12px;">
+        <div id="audioMeter" style="height:100%;width:0%;background:linear-gradient(90deg,var(--accent2),var(--accent));"></div>
+      </div>
+
+      <div class="row"><label>Reactivity</label><span class="val" id="v_audioSens">60%</span></div>
+      <input type="range" id="audioSens" min="0" max="150" value="60">
+
+      <select id="audioBand">
+        <option value="level">Overall Level</option>
+        <option value="bass">Bass</option>
+        <option value="mid">Mid</option>
+        <option value="treble">Treble</option>
+      </select>
+
+      <label style="font-size:9px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;display:block;margin:10px 0 4px;">React Targets</label>
+      <div class="btnrow">
+        <button class="toggle" id="aZoomToggle">Zoom</button>
+        <button class="toggle" id="aRotToggle">Rotate</button>
+        <button class="toggle" id="aHueToggle">Hue</button>
+      </div>
+      <div class="btnrow">
+        <button class="toggle" id="aMixToggle">Mix</button>
+        <button class="toggle" id="aGlitchToggle">Glitch</button>
+        <button class="toggle" id="aKaleidoToggle">Kaleido Spin</button>
+      </div>
+      <div class="btnrow">
+        <button class="toggle" id="aGenSpeedToggle">Gen Speed</button>
+        <button class="toggle" id="aDecayToggle">Persistence</button>
+      </div>
+      <div class="hint">Mic uses your microphone — pick a specific input from the dropdown above, or leave it on Default. Runs fine at the same time as either camera source, including the back camera. Device Audio captures system/tab sound where the browser supports it (desktop Chrome/Edge) — pick a tab and enable "Share audio" in the picker; it also runs alongside the camera, front or back, since it's a completely separate stream. Device Audio isn't available on iOS Safari or most mobile browsers (no screen-capture API) — use Mic there instead. Each layer below also has its own AR (Audio React) toggle to pulse its opacity and scale with the signal.</div>
+    </div>
+
+    <h2>LFO</h2>
+    <div class="group">
+      <label style="font-size:9px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;display:block;margin:0 0 4px;">Editing Lane</label>
+      <div class="btnrow" id="lfoTabRow">
+        <button class="toggle on" data-lfo="0">LFO 1</button>
+        <button class="toggle" data-lfo="1">LFO 2</button>
+        <button class="toggle" data-lfo="2">LFO 3</button>
+      </div>
+
+      <select id="lfoWave">
+        <option value="sine">Sine</option>
+        <option value="triangle">Triangle</option>
+        <option value="square">Square</option>
+        <option value="saw">Saw</option>
+      </select>
+
+      <div class="row"><label>Rate</label><span class="val" id="v_lfoRate">0.20 Hz</span></div>
+      <input type="range" id="lfoRate" min="2" max="500" value="20">
+
+      <div class="row"><label>Depth</label><span class="val" id="v_lfoDepth">50%</span></div>
+      <input type="range" id="lfoDepth" min="0" max="150" value="50">
+
+      <label id="lfoTargetsLabel" style="font-size:9px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;display:block;margin:10px 0 4px;">React Targets (editing LFO 1)</label>
+      <div class="btnrow">
+        <button class="toggle" id="lZoomToggle">Zoom<span class="lfoBadge" id="lZoomToggle_badge"></span></button>
+        <button class="toggle" id="lRotToggle">Rotate<span class="lfoBadge" id="lRotToggle_badge"></span></button>
+        <button class="toggle" id="lHueToggle">Hue<span class="lfoBadge" id="lHueToggle_badge"></span></button>
+      </div>
+      <div class="btnrow">
+        <button class="toggle" id="lMixToggle">Mix<span class="lfoBadge" id="lMixToggle_badge"></span></button>
+        <button class="toggle" id="lGlitchToggle">Glitch<span class="lfoBadge" id="lGlitchToggle_badge"></span></button>
+        <button class="toggle" id="lKaleidoToggle">Kaleido Spin<span class="lfoBadge" id="lKaleidoToggle_badge"></span></button>
+      </div>
+      <div class="btnrow">
+        <button class="toggle" id="lGenSpeedToggle">Gen Speed<span class="lfoBadge" id="lGenSpeedToggle_badge"></span></button>
+        <button class="toggle" id="lDecayToggle">Persistence<span class="lfoBadge" id="lDecayToggle_badge"></span></button>
+      </div>
+      <div class="btnrow">
+        <button class="toggle" id="lOxToggle">Offset X<span class="lfoBadge" id="lOxToggle_badge"></span></button>
+        <button class="toggle" id="lOyToggle">Offset Y<span class="lfoBadge" id="lOyToggle_badge"></span></button>
+      </div>
+      <div class="btnrow">
+        <button class="toggle" id="lSatToggle">Saturation<span class="lfoBadge" id="lSatToggle_badge"></span></button>
+        <button class="toggle" id="lConToggle">Contrast<span class="lfoBadge" id="lConToggle_badge"></span></button>
+        <button class="toggle" id="lBriToggle">Brightness<span class="lfoBadge" id="lBriToggle_badge"></span></button>
+      </div>
+      <div class="btnrow">
+        <button class="toggle" id="lKSegToggle">K. Segments<span class="lfoBadge" id="lKSegToggle_badge"></span></button>
+        <button class="toggle" id="lKFocusXToggle">K. Focus X<span class="lfoBadge" id="lKFocusXToggle_badge"></span></button>
+        <button class="toggle" id="lKFocusYToggle">K. Focus Y<span class="lfoBadge" id="lKFocusYToggle_badge"></span></button>
+      </div>
+      <div class="hint">Three independent oscillator lanes, each with its own wave/rate/depth. Pick a lane above, then toggle which parameters it drives — a parameter can be driven by more than one lane at once, and their motion adds together. The bracketed numbers on a lit-up target show which lane(s) currently control it. Stack lanes with Audio reactivity on shared targets for combined motion. Layers get their own separate LFO too.</div>
+    </div>
+
+    <h2>Layers</h2>
+    <div class="group">
+      <label class="filebtn" for="layerFile">+ Add Image / Video Layer</label>
+      <input type="file" id="layerFile" accept="image/*,video/*" multiple>
+      <div id="layerList"></div>
+      <div class="hint" id="layerEmptyHint">No layers yet. Uploaded images and clips composite into the feedback loop just like the live source, each with its own opacity and blend mode. Turn on a layer's LFO button to reveal its own independent rate/depth/wave controls, separate from the master LFO.</div>
+    </div>
+
+    <h2>Feedback</h2>
+    <div class="group">
+      <div class="row"><label>Persistence</label><span class="val" id="v_decay">88%</span></div>
+      <input type="range" id="decay" min="0" max="100" value="88">
+
+      <div class="row"><label>Zoom</label><span class="val" id="v_zoom">1.02</span></div>
+      <input type="range" id="zoom" min="80" max="130" value="102">
+
+      <div class="row"><label>Rotate</label><span class="val" id="v_rot">0.0°</span></div>
+      <input type="range" id="rot" min="-100" max="100" value="0">
+
+      <div class="row"><label>Offset X</label><span class="val" id="v_ox">0</span></div>
+      <input type="range" id="ox" min="-40" max="40" value="0">
+
+      <div class="row"><label>Offset Y</label><span class="val" id="v_oy">0</span></div>
+      <input type="range" id="oy" min="-40" max="40" value="0">
+
+      <div class="row"><label>Live Mix</label><span class="val" id="v_mix">35%</span></div>
+      <input type="range" id="mix" min="0" max="100" value="35">
+    </div>
+
+    <h2>Kaleidoscope</h2>
+    <div class="group">
+      <div class="btnrow">
+        <button class="toggle" id="kaleidoToggle">Kaleido Mirror</button>
+      </div>
+      <div class="row"><label>Segments</label><span class="val" id="v_kSegments">8</span></div>
+      <input type="range" id="kSegments" min="2" max="20" value="8">
+
+      <div class="row"><label>Spin</label><span class="val" id="v_kSpin">0.0</span></div>
+      <input type="range" id="kSpin" min="-100" max="100" value="0">
+
+      <div class="row"><label>Focus X</label><span class="val" id="v_kFocusX">0</span></div>
+      <input type="range" id="kFocusX" min="-200" max="200" value="0">
+
+      <div class="row"><label>Focus Y</label><span class="val" id="v_kFocusY">0</span></div>
+      <input type="range" id="kFocusY" min="-200" max="200" value="0">
+      <div class="hint">Kaleido Mirror slices the whole feedback loop into rotating mirrored wedges — since it feeds back into itself each frame, it builds into an evolving mandala over time. Works on camera, generator, or layers alike.</div>
+    </div>
+
+    <h2>Color</h2>
+    <div class="group">
+      <div class="row"><label>Hue Spin</label><span class="val" id="v_hue">0</span></div>
+      <input type="range" id="hue" min="0" max="20" value="0">
+
+      <div class="row"><label>Saturation</label><span class="val" id="v_sat">120%</span></div>
+      <input type="range" id="sat" min="0" max="300" value="120">
+
+      <div class="row"><label>Contrast</label><span class="val" id="v_con">110%</span></div>
+      <input type="range" id="con" min="50" max="250" value="110">
+
+      <div class="row"><label>Brightness</label><span class="val" id="v_bri">100%</span></div>
+      <input type="range" id="bri" min="20" max="200" value="100">
+
+      <div class="btnrow">
+        <button class="toggle" id="invertToggle">Invert</button>
+        <select id="blendMode" style="flex:1">
+          <option value="source-over">Normal</option>
+          <option value="screen">Screen</option>
+          <option value="lighten">Lighten</option>
+          <option value="difference">Difference</option>
+          <option value="overlay">Overlay</option>
+          <option value="color-dodge">Color Dodge</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="hint">
+      Feedback synths draw each frame slightly transformed on top of the last, then blend in the live source and any layers. Push Persistence and Zoom for tunnels; add Rotate for spirals. Flow Field, Kaleidoscope, Cellular Automata, Starfield and Metaballs each carry their own internal motion, so try them with low Live Mix to see the pattern clearly, or high Mix + heavy feedback to melt them together.
+    </div>
+
+    <h2>Glitch</h2>
+    <div class="group">
+      <div class="btnrow">
+        <button class="toggle" id="glitchToggle">Glitch FX</button>
+        <button class="toggle" id="glitchAutoToggle">Auto Chaos</button>
+      </div>
+      <div class="row"><label>Intensity</label><span class="val" id="v_glitchIntensity">50%</span></div>
+      <input type="range" id="glitchIntensity" min="0" max="100" value="50">
+
+      <div class="row"><label>Auto Rate</label><span class="val" id="v_glitchAutoRate">30%</span></div>
+      <input type="range" id="glitchAutoRate" min="0" max="100" value="30">
+
+      <div class="btnrow">
+        <button class="toggle" id="gRgbToggle">RGB Split</button>
+        <button class="toggle" id="gBlockToggle">Block Shift</button>
+      </div>
+      <div class="btnrow">
+        <button class="toggle" id="gScanToggle">Scanlines</button>
+        <button class="toggle" id="gStaticToggle">Static</button>
+      </div>
+      <div class="btnrow">
+        <button class="toggle" id="gPosterizeToggle">Posterize</button>
+      </div>
+      <div class="row"><label>Posterize Levels</label><span class="val" id="v_gPosterizeLevels">6</span></div>
+      <input type="range" id="gPosterizeLevels" min="2" max="12" value="6">
+
+      <button class="filebtn" id="glitchTriggerBtn" style="border-style:solid;">&#9889; Trigger Burst</button>
+      <div class="hint">Manual toggles run continuously; Auto Chaos randomly fires short bursts of RGB split, block tearing, static, scanlines or an invert flash on its own — great for hands-off chaos. Trigger Burst fires one immediately.</div>
+    </div>
+
+    <h2>Record</h2>
+    <div class="group">
+      <div class="btnrow">
+        <button class="toggle" id="recordBtn">Record</button>
+      </div>
+      <div class="row" id="recStatus" style="display:none;">
+        <label><div class="dot" id="recDot" style="display:inline-block;vertical-align:middle;margin-right:6px;"></div>Recording</label>
+        <span class="val" id="recTime">00:00</span>
+      </div>
+      <div id="recDownloadWrap" style="display:none;">
+        <a id="recDownloadLink" class="filebtn" style="display:block;text-decoration:none;box-sizing:border-box;">&#11015; Download Recording</a>
+      </div>
+      <div class="hint">Captures exactly what's on screen — all layers, effects, and color grading — at the canvas's native resolution. If a mic or device audio input is active, it's recorded too. Saves as .webm.</div>
+    </div>
+  </div>
+</div>
+
+<script>
+(() => {
+  const video = document.createElement('video');
+  video.autoplay = true; video.playsInline = true; video.muted = true;
+
+  const out = document.getElementById('out');
+  const octx = out.getContext('2d', { willReadFrequently: false });
+
+  // Offscreen buffer holds the persisting feedback image
+  const buf = document.createElement('canvas');
+  buf.width = out.width; buf.height = out.height;
+  const bctx = buf.getContext('2d');
+
+  // Scratch canvas for drawing the transformed previous buffer
+  const scratch = document.createElement('canvas');
+  scratch.width = out.width; scratch.height = out.height;
+  const sctx = scratch.getContext('2d');
+
+  // Generator canvas: internal low-res procedural source, scaled up on composite
+  const gen = document.createElement('canvas');
+  gen.width = 320; gen.height = 240;
+  const gctx = gen.getContext('2d');
+  const genImg = gctx.createImageData(gen.width, gen.height);
+
+  // Kaleidoscope mirror temp canvas (operates at buffer resolution, feeds back)
+  const kTemp = document.createElement('canvas');
+  kTemp.width = buf.width; kTemp.height = buf.height;
+  const kctx = kTemp.getContext('2d');
+  let fxTime = 0;
+
+  // RGB channel split temp canvases (operate at output resolution)
+  const chR = document.createElement('canvas'), chG = document.createElement('canvas'), chB = document.createElement('canvas');
+  [chR, chG, chB].forEach(c => { c.width = out.width; c.height = out.height; });
+  const chRctx = chR.getContext('2d'), chGctx = chG.getContext('2d'), chBctx = chB.getContext('2d');
+
+  // small static-noise texture, regenerated cheaply each time it's used
+  const noiseTex = document.createElement('canvas');
+  noiseTex.width = 160; noiseTex.height = 120;
+  const ntx = noiseTex.getContext('2d');
+  const noiseImg = ntx.createImageData(noiseTex.width, noiseTex.height);
+
+  let running = false, mirrored = false, frozen = false, streamObj = null;
+  let hueAngle = 0;
+  let sourceMode = 'camera'; // 'camera' | 'generator'
+  let camReady = false;
+  let genTime = 0;
+
+  // ---- Layers (uploaded images / video clips) ----
+  let layers = [];
+  let layerId = 0;
+
+  const state = {
+    decay: .88, zoom: 1.02, rot: 0, ox: 0, oy: 0, mix: .35,
+    hueSpeed: 0, sat: 120, con: 110, bri: 100, invert: false, blend: 'source-over',
+    genSpeed: 1, genPattern: 'plasma',
+    kaleidoOn: false, kSegments: 8, kSpin: 0, kFocusX: 0, kFocusY: 0,
+    glitchOn: false, glitchAuto: false, glitchIntensity: .5, glitchAutoRate: .3,
+    gRgb: false, gBlock: false, gScan: false, gStatic: false, gPosterize: false, gPosterizeLevels: 6,
+    audioSens: .6, audioBand: 'level',
+    aZoom: false, aRot: false, aHue: false, aMix: false, aGlitch: false, aKaleido: false, aGenSpeed: false, aDecay: false,
+    srcRotation: 0,
+    // Three independent LFO lanes; each has its own wave/rate/depth/phase.
+    lfos: [
+      { wave: 'sine', rate: .2, depth: .5, phase: 0 },
+      { wave: 'sine', rate: .33, depth: .5, phase: Math.random() * Math.PI * 2 },
+      { wave: 'sine', rate: .11, depth: .5, phase: Math.random() * Math.PI * 2 }
+    ],
+    // For each drivable parameter, the set of lane indices (0,1,2) currently assigned to it.
+    lTargets: {
+      zoom: new Set(), rot: new Set(), hue: new Set(), mix: new Set(), glitch: new Set(), kaleido: new Set(),
+      genSpeed: new Set(), decay: new Set(),
+      ox: new Set(), oy: new Set(), sat: new Set(), con: new Set(), bri: new Set(),
+      kSeg: new Set(), kFocusX: new Set(), kFocusY: new Set()
+    }
+  };
+
+  const LFO_PARAMS = [
+    ['zoom', 'lZoomToggle'], ['rot', 'lRotToggle'], ['hue', 'lHueToggle'],
+    ['mix', 'lMixToggle'], ['glitch', 'lGlitchToggle'], ['kaleido', 'lKaleidoToggle'],
+    ['genSpeed', 'lGenSpeedToggle'], ['decay', 'lDecayToggle'],
+    ['ox', 'lOxToggle'], ['oy', 'lOyToggle'],
+    ['sat', 'lSatToggle'], ['con', 'lConToggle'], ['bri', 'lBriToggle'],
+    ['kSeg', 'lKSegToggle'], ['kFocusX', 'lKFocusXToggle'], ['kFocusY', 'lKFocusYToggle']
+  ];
+  let currentLfoTab = 0;
+
+  const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
+  const clamp01 = v => clamp(v, 0, 1);
+
+  const $ = id => document.getElementById(id);
+
+  function bind(id, key, fmt, transform) {
+    const el = $(id), outEl = $('v_' + id);
+    const update = () => {
+      const raw = parseFloat(el.value);
+      state[key] = transform ? transform(raw) : raw;
+      if (outEl) outEl.textContent = fmt(raw);
+    };
+    el.addEventListener('input', update);
+    update();
+  }
+
+  bind('decay', 'decay', v => v + '%', v => v / 100);
+  bind('zoom', 'zoom', v => (v / 100).toFixed(2), v => v / 100);
+  bind('rot', 'rot', v => (v / 10).toFixed(1) + '°', v => v / 10);
+  bind('ox', 'ox', v => v);
+  bind('oy', 'oy', v => v);
+  bind('mix', 'mix', v => v + '%', v => v / 100);
+  bind('hue', 'hueSpeed', v => v);
+  bind('sat', 'sat', v => v + '%');
+  bind('con', 'con', v => v + '%');
+  bind('bri', 'bri', v => v + '%');
+  bind('genSpeed', 'genSpeed', v => (v / 100).toFixed(1) + 'x', v => v / 100);
+  bind('kSegments', 'kSegments', v => Math.round(v));
+  bind('kSpin', 'kSpin', v => (v / 50).toFixed(1), v => v / 50);
+  bind('kFocusX', 'kFocusX', v => v);
+  bind('kFocusY', 'kFocusY', v => v);
+  bind('glitchIntensity', 'glitchIntensity', v => v + '%', v => v / 100);
+  bind('glitchAutoRate', 'glitchAutoRate', v => v + '%', v => v / 100);
+  bind('gPosterizeLevels', 'gPosterizeLevels', v => Math.round(v));
+  bind('audioSens', 'audioSens', v => v + '%', v => v / 100);
+  $('audioBand').addEventListener('change', e => state.audioBand = e.target.value);
+  function refreshLfoTabUI() {
+    const lfo = state.lfos[currentLfoTab];
+    $('lfoWave').value = lfo.wave;
+    $('lfoRate').value = Math.round(lfo.rate * 100);
+    $('v_lfoRate').textContent = lfo.rate.toFixed(2) + ' Hz';
+    $('lfoDepth').value = Math.round(lfo.depth * 100);
+    $('v_lfoDepth').textContent = Math.round(lfo.depth * 100) + '%';
+    $('lfoTargetsLabel').textContent = 'React Targets (editing LFO ' + (currentLfoTab + 1) + ')';
+    document.querySelectorAll('#lfoTabRow .toggle').forEach(btn => {
+      btn.classList.toggle('on', parseInt(btn.dataset.lfo, 10) === currentLfoTab);
+    });
+    LFO_PARAMS.forEach(([key, btnId]) => {
+      const btn = $(btnId);
+      btn.classList.toggle('on', state.lTargets[key].has(currentLfoTab));
+      const badge = $(btnId + '_badge');
+      if (badge) {
+        const lanes = [...state.lTargets[key]].sort().map(i => i + 1).join(',');
+        badge.textContent = lanes ? '[' + lanes + ']' : '';
+      }
+    });
+  }
+
+  document.querySelectorAll('#lfoTabRow .toggle').forEach(btn => {
+    btn.addEventListener('click', () => {
+      currentLfoTab = parseInt(btn.dataset.lfo, 10);
+      refreshLfoTabUI();
+    });
+  });
+
+  $('lfoWave').addEventListener('change', e => { state.lfos[currentLfoTab].wave = e.target.value; });
+  $('lfoRate').addEventListener('input', e => {
+    const raw = parseFloat(e.target.value);
+    state.lfos[currentLfoTab].rate = raw / 100;
+    $('v_lfoRate').textContent = (raw / 100).toFixed(2) + ' Hz';
+  });
+  $('lfoDepth').addEventListener('input', e => {
+    const raw = parseFloat(e.target.value);
+    state.lfos[currentLfoTab].depth = raw / 100;
+    $('v_lfoDepth').textContent = raw + '%';
+  });
+
+  LFO_PARAMS.forEach(([key, btnId]) => {
+    $(btnId).addEventListener('click', () => {
+      const set = state.lTargets[key];
+      if (set.has(currentLfoTab)) set.delete(currentLfoTab); else set.add(currentLfoTab);
+      refreshLfoTabUI();
+    });
+  });
+
+  $('blendMode').addEventListener('change', e => state.blend = e.target.value);
+  $('genPattern').addEventListener('change', e => {
+    state.genPattern = e.target.value;
+    resetGeneratorState();
+  });
+
+  toggleBtn('kaleidoToggle', v => state.kaleidoOn = v);
+  toggleBtn('glitchToggle', v => state.glitchOn = v);
+  toggleBtn('glitchAutoToggle', v => state.glitchAuto = v);
+  toggleBtn('gRgbToggle', v => state.gRgb = v);
+  toggleBtn('gBlockToggle', v => state.gBlock = v);
+  toggleBtn('gScanToggle', v => state.gScan = v);
+  toggleBtn('gStaticToggle', v => state.gStatic = v);
+  toggleBtn('gPosterizeToggle', v => state.gPosterize = v);
+  $('glitchTriggerBtn').addEventListener('click', () => triggerBurst());
+
+  toggleBtn('aZoomToggle', v => state.aZoom = v);
+  toggleBtn('aRotToggle', v => state.aRot = v);
+  toggleBtn('aHueToggle', v => state.aHue = v);
+  toggleBtn('aMixToggle', v => state.aMix = v);
+  toggleBtn('aGlitchToggle', v => state.aGlitch = v);
+  toggleBtn('aKaleidoToggle', v => state.aKaleido = v);
+  toggleBtn('aGenSpeedToggle', v => state.aGenSpeed = v);
+  toggleBtn('aDecayToggle', v => state.aDecay = v);
+
+  function toggleBtn(id, onChange) {
+    const el = $(id);
+    el.addEventListener('click', () => {
+      el.classList.toggle('on');
+      onChange(el.classList.contains('on'));
+    });
+  }
+  toggleBtn('mirrorToggle', v => mirrored = v);
+  toggleBtn('freezeToggle', v => frozen = v);
+  toggleBtn('invertToggle', v => state.invert = v);
+
+  $('srcRotateBtn').addEventListener('click', () => {
+    state.srcRotation = (state.srcRotation + 90) % 360;
+    $('srcRotateBtn').textContent = 'Rotate: ' + state.srcRotation + '\u00B0';
+  });
+
+  $('clearBtn').addEventListener('click', () => {
+    bctx.fillStyle = '#000';
+    bctx.fillRect(0, 0, buf.width, buf.height);
+  });
+
+  function updateSourceUI() {
+    $('cameraOpts').classList.toggle('active', sourceMode === 'camera');
+    $('genOpts').classList.toggle('active', sourceMode === 'generator');
+  }
+  updateSourceUI();
+  refreshLfoTabUI();
+  listCameras();
+  listMics();
+  if (navigator.mediaDevices && navigator.mediaDevices.addEventListener) {
+    navigator.mediaDevices.addEventListener('devicechange', () => { listCameras(); listMics(); });
+  }
+
+  let cameraDevices = [], currentCameraDeviceId = null, currentFacing = 'user';
+
+  async function listCameras() {
+    try {
+      const devices = await navigator.mediaDevices.enumerateDevices();
+      cameraDevices = devices.filter(d => d.kind === 'videoinput');
+      populateCameraSelect();
+    } catch (e) { /* enumeration can fail before permission is granted; ignore */ }
+  }
+
+  function populateCameraSelect() {
+    const sel = $('cameraSelect');
+    if (!sel) return;
+    const prevValue = sel.value;
+    sel.innerHTML = '';
+    const optDefault = document.createElement('option');
+    optDefault.value = ''; optDefault.textContent = 'Default Camera';
+    sel.appendChild(optDefault);
+    cameraDevices.forEach((d, i) => {
+      const opt = document.createElement('option');
+      opt.value = d.deviceId;
+      opt.textContent = d.label || ('Camera ' + (i + 1));
+      sel.appendChild(opt);
+    });
+    if (currentCameraDeviceId && cameraDevices.some(d => d.deviceId === currentCameraDeviceId)) {
+      sel.value = currentCameraDeviceId;
+    } else if (prevValue) {
+      sel.value = prevValue;
+    }
+  }
+
+  function updateFacingButtonsUI() {
+    const fb = $('facingFrontBtn'), bb = $('facingBackBtn');
+    if (fb) fb.classList.toggle('on', currentFacing === 'user');
+    if (bb) bb.classList.toggle('on', currentFacing === 'environment');
+  }
+
+  // Swaps in a new video-only stream (camera audio is never requested — Mic/Device
+  // Audio below handle sound independently, so camera and audio never contend for
+  // the same permission or stream).
+  async function applyCameraStream(videoConstraints) {
+    const newStream = await navigator.mediaDevices.getUserMedia({ video: videoConstraints, audio: false });
+    if (streamObj) streamObj.getTracks().forEach(t => t.stop());
+    streamObj = newStream;
+    video.srcObject = streamObj;
+    await video.play();
+    camReady = true;
+    return streamObj;
+  }
+
+  async function ensureCamera(deviceId) {
+    if (camReady && (!deviceId || deviceId === currentCameraDeviceId)) return true;
+    try {
+      const videoConstraints = deviceId
+        ? { deviceId: { exact: deviceId }, width: { ideal: 1280 }, height: { ideal: 960 } }
+        : { width: { ideal: 1280 }, height: { ideal: 960 }, facingMode: 'user' };
+      await applyCameraStream(videoConstraints);
+      const track = streamObj.getVideoTracks()[0];
+      const settings = track ? track.getSettings() : {};
+      currentCameraDeviceId = settings.deviceId || deviceId || currentCameraDeviceId;
+      currentFacing = settings.facingMode || (deviceId ? currentFacing : 'user');
+      updateFacingButtonsUI();
+      listCameras();
+      return true;
+    } catch (err) {
+      $('statusText').textContent = 'CAMERA DENIED';
+      alert('Could not access camera: ' + err.message + (deviceId ? '' : '\n\nSwitching to Generator source instead.'));
+      return false;
+    }
+  }
+
+  // Front/Back buttons use facingMode directly instead of a specific deviceId —
+  // this is the reliable way to reach the rear lens on phones, where device
+  // enumeration/labels are often unavailable or ambiguous.
+  async function ensureCameraFacing(facing) {
+    try {
+      await applyCameraStream({ facingMode: { ideal: facing }, width: { ideal: 1280 }, height: { ideal: 960 } });
+      currentFacing = facing;
+      const track = streamObj.getVideoTracks()[0];
+      currentCameraDeviceId = (track && track.getSettings().deviceId) || currentCameraDeviceId;
+      // Mirroring a rear camera looks wrong by default; front stays mirrored. User can still override.
+      mirrored = facing === 'user';
+      $('mirrorToggle').classList.toggle('on', mirrored);
+      updateFacingButtonsUI();
+      listCameras();
+      return true;
+    } catch (err) {
+      $('statusText').textContent = 'CAMERA DENIED';
+      alert('Could not access camera: ' + err.message);
+      return false;
+    }
+  }
+
+  $('cameraSelect').addEventListener('change', async e => {
+    const id = e.target.value;
+    const ok = await ensureCamera(id || undefined);
+    if (!ok) populateCameraSelect();
+  });
+  $('cameraRefreshBtn').addEventListener('click', () => listCameras());
+  $('facingFrontBtn').addEventListener('click', () => ensureCameraFacing('user'));
+  $('facingBackBtn').addEventListener('click', () => ensureCameraFacing('environment'));
+
+  // ---------- Audio reactivity ----------
+  let audioCtx = null, analyser = null, audioData = null, audioSourceNode = null, audioStream = null;
+  let audioMode = null; // null | 'mic' | 'sys'
+  let micDevices = [], currentMicDeviceId = null;
+  const audioLevels = { level: 0, bass: 0, mid: 0, treble: 0 };
+
+  async function listMics() {
+    try {
+      const devices = await navigator.mediaDevices.enumerateDevices();
+      micDevices = devices.filter(d => d.kind === 'audioinput');
+      populateMicSelect();
+    } catch (e) { /* enumeration can fail before permission is granted; ignore */ }
+  }
+
+  function populateMicSelect() {
+    const sel = $('micSelect');
+    if (!sel) return;
+    const prevValue = sel.value;
+    sel.innerHTML = '';
+    const optDefault = document.createElement('option');
+    optDefault.value = ''; optDefault.textContent = 'Default Microphone';
+    sel.appendChild(optDefault);
+    micDevices.forEach((d, i) => {
+      const opt = document.createElement('option');
+      opt.value = d.deviceId;
+      opt.textContent = d.label || ('Microphone ' + (i + 1));
+      sel.appendChild(opt);
+    });
+    if (currentMicDeviceId && micDevices.some(d => d.deviceId === currentMicDeviceId)) {
+      sel.value = currentMicDeviceId;
+    } else if (prevValue) {
+      sel.value = prevValue;
+    }
+  }
+
+  async function setupAnalyser(stream) {
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if (audioCtx.state === 'suspended') {
+      try { await audioCtx.resume(); } catch (e) { /* resumes on next user gesture */ }
+    }
+    audioSourceNode = audioCtx.createMediaStreamSource(stream);
+    analyser = audioCtx.createAnalyser();
+    analyser.fftSize = 256;
+    analyser.smoothingTimeConstant = 0.75;
+    audioData = new Uint8Array(analyser.frequencyBinCount);
+    audioSourceNode.connect(analyser);
+  }
+
+  function stopAudio() {
+    if (audioSourceNode) { try { audioSourceNode.disconnect(); } catch (e) {} audioSourceNode = null; }
+    if (audioStream) { audioStream.getTracks().forEach(t => t.stop()); audioStream = null; }
+    analyser = null; audioData = null; audioMode = null;
+    $('micToggle').classList.remove('on');
+    $('sysAudioToggle').classList.remove('on');
+    audioLevels.level = 0; audioLevels.bass = 0; audioLevels.mid = 0; audioLevels.treble = 0;
+    $('v_audioLevel').textContent = '0%';
+    $('audioMeter').style.width = '0%';
+  }
+
+  async function startMic(deviceId) {
+    stopAudio();
+    try {
+      const constraints = deviceId ? { audio: { deviceId: { exact: deviceId } } } : { audio: true };
+      audioStream = await navigator.mediaDevices.getUserMedia(constraints);
+      await setupAnalyser(audioStream);
+      audioMode = 'mic';
+      const track = audioStream.getAudioTracks()[0];
+      currentMicDeviceId = (track && track.getSettings().deviceId) || deviceId || currentMicDeviceId;
+      $('micToggle').classList.add('on');
+      listMics();
+    } catch (err) {
+      alert('Could not access microphone: ' + err.message);
+    }
+  }
+
+  const hasDisplayCapture = !!(navigator.mediaDevices && typeof navigator.mediaDevices.getDisplayMedia === 'function');
+  if (!hasDisplayCapture) {
+    const sysBtn = $('sysAudioToggle');
+    sysBtn.classList.add('disabled');
+    sysBtn.title = 'Device Audio (tab/system capture) isn\'t available in this browser — common on iOS Safari and most mobile browsers. Use Mic instead.';
+  }
+
+  async function startSysAudio() {
+    if (!hasDisplayCapture) {
+      alert('Device Audio (tab/system capture) isn\'t supported in this browser. Try desktop Chrome or Edge, or use Mic instead — Mic works fine alongside either camera.');
+      return;
+    }
+    stopAudio();
+    try {
+      audioStream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: true });
+      audioStream.getVideoTracks().forEach(t => t.stop());
+      if (audioStream.getAudioTracks().length === 0) {
+        alert('No audio track was shared. Try again and enable "Share audio" / "Share tab audio" in the picker.');
+        stopAudio();
+        return;
+      }
+      await setupAnalyser(audioStream);
+      audioMode = 'sys';
+      $('sysAudioToggle').classList.add('on');
+    } catch (err) {
+      alert('Could not capture device audio: ' + err.message);
+    }
+  }
+
+  $('micToggle').addEventListener('click', () => {
+    if (audioMode === 'mic') stopAudio(); else startMic($('micSelect').value || undefined);
+  });
+  $('sysAudioToggle').addEventListener('click', () => {
+    if (!hasDisplayCapture) return;
+    if (audioMode === 'sys') stopAudio(); else startSysAudio();
+  });
+  $('micSelect').addEventListener('change', e => {
+    if (audioMode === 'mic') startMic(e.target.value || undefined);
+  });
+
+  function updateAudioLevels() {
+    if (!analyser) return;
+    analyser.getByteFrequencyData(audioData);
+    const n = audioData.length;
+    const bassEnd = Math.floor(n * 0.12), midEnd = Math.floor(n * 0.5);
+    let bass = 0, mid = 0, treble = 0, total = 0;
+    for (let i = 0; i < n; i++) {
+      const v = audioData[i] / 255;
+      total += v;
+      if (i < bassEnd) bass += v;
+      else if (i < midEnd) mid += v;
+      else treble += v;
+    }
+    audioLevels.level = total / n;
+    audioLevels.bass = bass / Math.max(1, bassEnd);
+    audioLevels.mid = mid / Math.max(1, midEnd - bassEnd);
+    audioLevels.treble = treble / Math.max(1, n - midEnd);
+    const pct = Math.round(audioLevels.level * 100);
+    $('v_audioLevel').textContent = pct + '%';
+    $('audioMeter').style.width = Math.min(100, pct * 1.4) + '%';
+  }
+
+  function currentAudioValue() {
+    return audioLevels[state.audioBand] || 0;
+  }
+
+  // ---------- LFO ----------
+  let lastFrameTime = performance.now();
+
+  function lfoRaw(phase, wave) {
+    const t = ((phase % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2);
+    switch (wave) {
+      case 'triangle': return (2 / Math.PI) * Math.asin(Math.sin(t));
+      case 'square': return Math.sin(t) >= 0 ? 1 : -1;
+      case 'saw': return (t / (Math.PI * 2)) * 2 - 1;
+      default: return Math.sin(t);
+    }
+  }
+
+  // Advances every lane's own phase and returns their current values as an array,
+  // indexed to match state.lfos / state.lTargets lane indices.
+  function currentLfoValues(dt) {
+    return state.lfos.map(lfo => {
+      lfo.phase += lfo.rate * Math.PI * 2 * dt;
+      return lfoRaw(lfo.phase, lfo.wave) * lfo.depth;
+    });
+  }
+
+  // Sums the contribution of every lane assigned to a given parameter key.
+  function sumLfoFor(key, lfoValues) {
+    let s = 0;
+    state.lTargets[key].forEach(i => { s += lfoValues[i] || 0; });
+    return s;
+  }
+
+  // Each layer runs its own independent oscillator (own rate/depth/wave),
+  // separate from the master LFO lanes used by the parameters above.
+  function layerLfoValue(layer, dt) {
+    layer.lfoPhase = (layer.lfoPhase || 0) + layer.lfoRate * Math.PI * 2 * dt;
+    return lfoRaw(layer.lfoPhase, layer.lfoWave) * layer.lfoDepth;
+  }
+
+  // ---------- Recording ----------
+  let mediaRecorder = null, recordedChunks = [], recordStartTime = 0, recordTimerInterval = null, lastDownloadUrl = null;
+
+  function pickMimeType() {
+    const candidates = [
+      'video/webm;codecs=vp9,opus',
+      'video/webm;codecs=vp9',
+      'video/webm;codecs=vp8,opus',
+      'video/webm;codecs=vp8',
+      'video/webm'
+    ];
+    for (const c of candidates) {
+      if (window.MediaRecorder && MediaRecorder.isTypeSupported(c)) return c;
+    }
+    return '';
+  }
+
+  function formatTime(ms) {
+    const s = Math.floor(ms / 1000);
+    const mm = String(Math.floor(s / 60)).padStart(2, '0');
+    const ss = String(s % 60).padStart(2, '0');
+    return mm + ':' + ss;
+  }
+
+  function updateRecordTimer() {
+    $('recTime').textContent = formatTime(performance.now() - recordStartTime);
+  }
+
+  function startRecording() {
+    if (!window.MediaRecorder || !out.captureStream) {
+      alert('Recording is not supported in this browser.');
+      return;
+    }
+    if (lastDownloadUrl) { URL.revokeObjectURL(lastDownloadUrl); lastDownloadUrl = null; }
+    $('recDownloadWrap').style.display = 'none';
+
+    const videoStream = out.captureStream(60);
+    const tracks = [...videoStream.getVideoTracks()];
+    if (audioStream && audioStream.getAudioTracks().length) {
+      tracks.push(...audioStream.getAudioTracks());
+    }
+    const mixedStream = new MediaStream(tracks);
+    const mimeType = pickMimeType();
+    recordedChunks = [];
+
+    try {
+      mediaRecorder = new MediaRecorder(mixedStream, mimeType
+        ? { mimeType, videoBitsPerSecond: 8000000 }
+        : { videoBitsPerSecond: 8000000 });
+    } catch (err) {
+      alert('Could not start recording: ' + err.message);
+      return;
+    }
+
+    mediaRecorder.ondataavailable = e => { if (e.data && e.data.size) recordedChunks.push(e.data); };
+    mediaRecorder.onstop = () => {
+      const blob = new Blob(recordedChunks, { type: mediaRecorder.mimeType || 'video/webm' });
+      const url = URL.createObjectURL(blob);
+      lastDownloadUrl = url;
+      const ts = new Date().toISOString().replace(/[:.]/g, '-');
+      const link = $('recDownloadLink');
+      link.href = url;
+      link.download = `konkos-vidj0-${ts}.webm`;
+      $('recDownloadWrap').style.display = 'block';
+    };
+
+    mediaRecorder.start();
+    recordStartTime = performance.now();
+    $('recordBtn').classList.add('on');
+    $('recordBtn').textContent = 'Stop Recording';
+    $('recStatus').style.display = 'flex';
+    $('recDot').classList.add('live');
+    updateRecordTimer();
+    recordTimerInterval = setInterval(updateRecordTimer, 500);
+  }
+
+  function stopRecording() {
+    if (!mediaRecorder) return;
+    mediaRecorder.stop();
+    mediaRecorder = null;
+    clearInterval(recordTimerInterval);
+    $('recordBtn').classList.remove('on');
+    $('recordBtn').textContent = 'Record';
+    $('recDot').classList.remove('live');
+  }
+
+  $('recordBtn').addEventListener('click', () => {
+    if (mediaRecorder) stopRecording(); else startRecording();
+  });
+
+  $('sourceMode').addEventListener('change', async (e) => {
+    const desired = e.target.value;
+    if (desired === 'camera') {
+      const ok = await ensureCamera();
+      if (!ok) { e.target.value = 'generator'; sourceMode = 'generator'; updateSourceUI(); return; }
+    }
+    sourceMode = desired;
+    updateSourceUI();
+  });
+
+  function beginLoop() {
+    $('startOverlay').style.display = 'none';
+    $('statusText').textContent = 'LIVE';
+    $('liveDot').classList.add('live');
+    running = true;
+    requestAnimationFrame(loop);
+  }
+
+  $('startCamBtn').addEventListener('click', async () => {
+    const ok = await ensureCamera();
+    sourceMode = 'camera';
+    $('sourceMode').value = ok ? 'camera' : 'generator';
+    if (!ok) sourceMode = 'generator';
+    updateSourceUI();
+    beginLoop();
+  });
+
+  $('startGenBtn').addEventListener('click', () => {
+    sourceMode = 'generator';
+    $('sourceMode').value = 'generator';
+    updateSourceUI();
+    beginLoop();
+  });
+
+  // ---------- Layers ----------
+  function escapeHtml(s) {
+    return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+
+  function addLayerFile(file) {
+    const url = URL.createObjectURL(file);
+    const isVideo = file.type.startsWith('video');
+    let el;
+    if (isVideo) {
+      el = document.createElement('video');
+      el.src = url; el.loop = true; el.muted = true; el.playsInline = true; el.autoplay = true;
+      el.play().catch(() => {});
+    } else {
+      el = document.createElement('img');
+      el.src = url;
+    }
+    const layer = {
+      id: layerId++, el, type: isVideo ? 'video' : 'image',
+      name: file.name, opacity: 0.5, blend: 'source-over', visible: true, audioReact: false, lfo: false, rotation: 0,
+      lfoWave: 'sine', lfoRate: .2, lfoDepth: .5, lfoPhase: Math.random() * Math.PI * 2
+    };
+    layers.push(layer);
+    renderLayerList();
+  }
+
+  $('layerFile').addEventListener('change', e => {
+    Array.from(e.target.files).forEach(addLayerFile);
+    e.target.value = '';
+  });
+
+  function renderLayerList() {
+    const c = $('layerList');
+    c.innerHTML = '';
+    $('layerEmptyHint').style.display = layers.length ? 'none' : 'block';
+    layers.forEach(layer => {
+      const row = document.createElement('div');
+      row.className = 'layerRow';
+      row.innerHTML = `
+        <div class="layerHead">
+          <span class="layerName">${layer.type === 'video' ? '&#127909;' : '&#128444;'} ${escapeHtml(layer.name)}</span>
+          <button class="mini" data-action="rotate" data-id="${layer.id}" title="Rotate">&#8635; ${layer.rotation || 0}&#176;</button>
+          <button class="mini ${layer.visible ? 'on' : 'off'}" data-action="toggle" data-id="${layer.id}">${layer.visible ? 'On' : 'Off'}</button>
+          <button class="mini ${layer.audioReact ? 'on' : ''}" data-action="audioReact" data-id="${layer.id}" title="React to audio">AR</button>
+          <button class="mini ${layer.lfo ? 'on' : ''}" data-action="lfo" data-id="${layer.id}" title="React to LFO">LFO</button>
+          <button class="mini" data-action="remove" data-id="${layer.id}">&#10005;</button>
+        </div>
+        <input type="range" min="0" max="100" value="${Math.round(layer.opacity * 100)}" data-action="opacity" data-id="${layer.id}">
+        <select data-action="blend" data-id="${layer.id}">
+          <option value="source-over">Normal</option>
+          <option value="screen">Screen</option>
+          <option value="lighten">Lighten</option>
+          <option value="multiply">Multiply</option>
+          <option value="difference">Difference</option>
+          <option value="overlay">Overlay</option>
+          <option value="color-dodge">Color Dodge</option>
+        </select>
+        <div class="layerLfoRow" style="display:${layer.lfo ? 'block' : 'none'};margin-top:6px;padding-top:8px;border-top:1px solid var(--line);">
+          <select data-action="lfoWave" data-id="${layer.id}" style="margin-bottom:8px;">
+            <option value="sine">Sine</option>
+            <option value="triangle">Triangle</option>
+            <option value="square">Square</option>
+            <option value="saw">Saw</option>
+          </select>
+          <div class="row"><label>Rate</label><span class="val" id="lfoRate_val_${layer.id}">${layer.lfoRate.toFixed(2)} Hz</span></div>
+          <input type="range" min="2" max="500" value="${Math.round(layer.lfoRate * 100)}" data-action="lfoRate" data-id="${layer.id}">
+          <div class="row"><label>Depth</label><span class="val" id="lfoDepth_val_${layer.id}">${Math.round(layer.lfoDepth * 100)}%</span></div>
+          <input type="range" min="0" max="150" value="${Math.round(layer.lfoDepth * 100)}" data-action="lfoDepth" data-id="${layer.id}">
+        </div>
+      `;
+      row.querySelector('[data-action="blend"]').value = layer.blend;
+      row.querySelector('[data-action="lfoWave"]').value = layer.lfoWave;
+      c.appendChild(row);
+    });
+  }
+
+  $('layerList').addEventListener('click', e => {
+    const btn = e.target.closest('button.mini');
+    if (!btn) return;
+    const id = parseInt(btn.dataset.id, 10);
+    const layer = layers.find(l => l.id === id);
+    if (!layer) return;
+    if (btn.dataset.action === 'toggle') {
+      layer.visible = !layer.visible;
+      renderLayerList();
+    }
+    if (btn.dataset.action === 'audioReact') {
+      layer.audioReact = !layer.audioReact;
+      renderLayerList();
+    }
+    if (btn.dataset.action === 'lfo') {
+      layer.lfo = !layer.lfo;
+      renderLayerList();
+    }
+    if (btn.dataset.action === 'rotate') {
+      layer.rotation = ((layer.rotation || 0) + 90) % 360;
+      renderLayerList();
+    }
+    if (btn.dataset.action === 'remove') {
+      if (layer.el.tagName === 'VIDEO') layer.el.pause();
+      layers = layers.filter(l => l.id !== id);
+      renderLayerList();
+    }
+  });
+
+  $('layerList').addEventListener('input', e => {
+    const id = parseInt(e.target.dataset.id, 10);
+    const layer = layers.find(l => l.id === id);
+    if (!layer) return;
+    if (e.target.dataset.action === 'opacity') layer.opacity = e.target.value / 100;
+    if (e.target.dataset.action === 'lfoRate') {
+      layer.lfoRate = e.target.value / 100;
+      const v = $('lfoRate_val_' + id);
+      if (v) v.textContent = layer.lfoRate.toFixed(2) + ' Hz';
+    }
+    if (e.target.dataset.action === 'lfoDepth') {
+      layer.lfoDepth = e.target.value / 100;
+      const v = $('lfoDepth_val_' + id);
+      if (v) v.textContent = Math.round(layer.lfoDepth * 100) + '%';
+    }
+  });
+
+  $('layerList').addEventListener('change', e => {
+    const id = parseInt(e.target.dataset.id, 10);
+    const layer = layers.find(l => l.id === id);
+    if (!layer) return;
+    if (e.target.dataset.action === 'blend') layer.blend = e.target.value;
+    if (e.target.dataset.action === 'lfoWave') layer.lfoWave = e.target.value;
+  });
+
+  // ---------- Generator patterns ----------
+  function drawPlasma(t) {
+    const w = gen.width, h = gen.height;
+    const data = genImg.data;
+    let i = 0;
+    for (let y = 0; y < h; y++) {
+      for (let x = 0; x < w; x++) {
+        const v = Math.sin(x * 0.045 + t) +
+                   Math.sin(y * 0.05 + t * 1.3) +
+                   Math.sin((x + y) * 0.035 + t * 0.7) +
+                   Math.sin(Math.sqrt((x - w / 2) ** 2 + (y - h / 2) ** 2) * 0.06 - t * 1.6);
+        const n = (v + 4) / 8; // 0..1
+        const r = Math.floor(128 + 127 * Math.sin(Math.PI * 2 * n));
+        const g = Math.floor(128 + 127 * Math.sin(Math.PI * 2 * n + 2.1));
+        const b = Math.floor(128 + 127 * Math.sin(Math.PI * 2 * n + 4.2));
+        data[i++] = r; data[i++] = g; data[i++] = b; data[i++] = 255;
+      }
+    }
+    gctx.putImageData(genImg, 0, 0);
+  }
+
+  function drawOrbits(t) {
+    const w = gen.width, h = gen.height;
+    gctx.fillStyle = '#03030a';
+    gctx.fillRect(0, 0, w, h);
+    const cx = w / 2, cy = h / 2;
+    const bodies = 5;
+    for (let i = 0; i < bodies; i++) {
+      const a = t * (0.6 + i * 0.23) + i * 1.7;
+      const rx = w * 0.32 * (0.4 + 0.6 * ((i + 1) / bodies));
+      const ry = h * 0.32 * (0.4 + 0.6 * ((bodies - i) / bodies));
+      const x = cx + Math.cos(a) * rx;
+      const y = cy + Math.sin(a * 1.3) * ry;
+      const hue = (t * 40 + i * 70) % 360;
+      const rad = 14 + 10 * Math.sin(t * 2 + i);
+      const grad = gctx.createRadialGradient(x, y, 0, x, y, rad * 2.4);
+      grad.addColorStop(0, `hsla(${hue},100%,65%,0.9)`);
+      grad.addColorStop(1, `hsla(${hue},100%,50%,0)`);
+      gctx.fillStyle = grad;
+      gctx.beginPath();
+      gctx.arc(x, y, rad * 2.4, 0, Math.PI * 2);
+      gctx.fill();
+    }
+  }
+
+  function drawNoiseGrid(t) {
+    const w = gen.width, h = gen.height;
+    const cols = 20, rows = 15;
+    const cw = w / cols, ch = h / rows;
+    for (let cy = 0; cy < rows; cy++) {
+      for (let cx = 0; cx < cols; cx++) {
+        const n = Math.sin(cx * 12.9898 + cy * 78.233 + t * 3) * 43758.5453;
+        const f = n - Math.floor(n);
+        const hue = (f * 360 + t * 30) % 360;
+        const light = 30 + f * 50;
+        gctx.fillStyle = `hsl(${hue},80%,${light}%)`;
+        gctx.fillRect(cx * cw, cy * ch, cw - 1, ch - 1);
+      }
+    }
+  }
+
+  function drawRays(t) {
+    const w = gen.width, h = gen.height;
+    gctx.fillStyle = '#020204';
+    gctx.fillRect(0, 0, w, h);
+    const cx = w / 2, cy = h / 2;
+    const rayCount = 40;
+    const maxLen = Math.sqrt(cx * cx + cy * cy);
+    for (let i = 0; i < rayCount; i++) {
+      const a = (i / rayCount) * Math.PI * 2 + t * 0.8;
+      const len = maxLen * (0.5 + 0.5 * Math.sin(t * 2 + i * 0.5));
+      const hue = (i / rayCount) * 360 + t * 60;
+      gctx.strokeStyle = `hsla(${hue % 360},100%,60%,0.8)`;
+      gctx.lineWidth = 2;
+      gctx.beginPath();
+      gctx.moveTo(cx, cy);
+      gctx.lineTo(cx + Math.cos(a) * len, cy + Math.sin(a) * len);
+      gctx.stroke();
+    }
+  }
+
+  // --- stateful pattern data, lazily created ---
+  let flowParticles = null;
+  let starParticles = null;
+  let caGrid = null;
+  const caCols = 64, caRows = 48;
+  let caAcc = 0;
+
+  function resetGeneratorState() {
+    flowParticles = null;
+    starParticles = null;
+    caGrid = null;
+    caAcc = 0;
+  }
+
+  function fieldAngle(x, y, t) {
+    return Math.sin(x * 0.02 + t) + Math.sin(y * 0.023 - t * 0.8) + Math.sin((x + y) * 0.015 + t * 1.3);
+  }
+
+  function drawFlowField(t) {
+    const w = gen.width, h = gen.height;
+    if (!flowParticles) {
+      flowParticles = [];
+      for (let i = 0; i < 160; i++) {
+        flowParticles.push({ x: Math.random() * w, y: Math.random() * h, hue: Math.random() * 360 });
+      }
+    }
+    gctx.fillStyle = 'rgba(3,3,8,0.12)';
+    gctx.fillRect(0, 0, w, h);
+    gctx.lineWidth = 1.4;
+    for (const p of flowParticles) {
+      const angle = fieldAngle(p.x, p.y, t) * Math.PI;
+      const nx = p.x + Math.cos(angle) * 2.4;
+      const ny = p.y + Math.sin(angle) * 2.4;
+      gctx.strokeStyle = `hsla(${(p.hue + t * 20) % 360},90%,60%,0.85)`;
+      gctx.beginPath();
+      gctx.moveTo(p.x, p.y);
+      gctx.lineTo(nx, ny);
+      gctx.stroke();
+      p.x = nx; p.y = ny;
+      if (p.x < 0 || p.x > w || p.y < 0 || p.y > h) {
+        p.x = Math.random() * w; p.y = Math.random() * h;
+      }
+    }
+  }
+
+  function drawKaleido(t) {
+    const w = gen.width, h = gen.height;
+    gctx.fillStyle = '#050308';
+    gctx.fillRect(0, 0, w, h);
+    const cx = w / 2, cy = h / 2;
+    const segments = 10;
+    gctx.save();
+    gctx.translate(cx, cy);
+    for (let i = 0; i < segments; i++) {
+      gctx.save();
+      gctx.rotate((i / segments) * Math.PI * 2);
+      if (i % 2 === 1) gctx.scale(1, -1);
+      for (let j = 0; j < 4; j++) {
+        const a = t * (0.6 + j * 0.3) + j * 1.3;
+        const r = 20 + j * 22 + 10 * Math.sin(t * 2 + j);
+        const x = Math.cos(a) * r;
+        const y = Math.sin(a * 1.4) * r * 0.6 + r * 0.3;
+        const hue = (t * 50 + j * 60 + i * 10) % 360;
+        gctx.fillStyle = `hsla(${hue},90%,60%,0.85)`;
+        gctx.beginPath();
+        gctx.arc(x, y, 6 + 3 * Math.sin(t * 3 + j), 0, Math.PI * 2);
+        gctx.fill();
+      }
+      gctx.restore();
+    }
+    gctx.restore();
+  }
+
+  function stepCA() {
+    const next = new Uint8Array(caCols * caRows);
+    for (let y = 0; y < caRows; y++) {
+      for (let x = 0; x < caCols; x++) {
+        let n = 0;
+        for (let dy = -1; dy <= 1; dy++) {
+          for (let dx = -1; dx <= 1; dx++) {
+            if (dx === 0 && dy === 0) continue;
+            const xx = (x + dx + caCols) % caCols, yy = (y + dy + caRows) % caRows;
+            n += caGrid[yy * caCols + xx];
+          }
+        }
+        const idx = y * caCols + x;
+        const alive = caGrid[idx];
+        next[idx] = alive ? (n === 2 || n === 3 ? 1 : 0) : (n === 3 ? 1 : 0);
+      }
+    }
+    // small random spark to keep the automaton from dying out or freezing
+    for (let k = 0; k < 3; k++) {
+      const rx = Math.floor(Math.random() * caCols), ry = Math.floor(Math.random() * caRows);
+      next[ry * caCols + rx] = 1;
+    }
+    caGrid = next;
+  }
+
+  function drawCA(t) {
+    const w = gen.width, h = gen.height;
+    if (!caGrid) {
+      caGrid = new Uint8Array(caCols * caRows);
+      for (let i = 0; i < caGrid.length; i++) caGrid[i] = Math.random() < 0.28 ? 1 : 0;
+    }
+    caAcc += 0.016 * state.genSpeed;
+    if (caAcc > 0.12) { caAcc = 0; stepCA(); }
+    const cw = w / caCols, ch = h / caRows;
+    gctx.fillStyle = '#020204';
+    gctx.fillRect(0, 0, w, h);
+    for (let y = 0; y < caRows; y++) {
+      for (let x = 0; x < caCols; x++) {
+        if (caGrid[y * caCols + x]) {
+          const hue = (x * 4 + y * 4 + t * 40) % 360;
+          gctx.fillStyle = `hsl(${hue},85%,55%)`;
+          gctx.fillRect(x * cw, y * ch, cw - 0.5, ch - 0.5);
+        }
+      }
+    }
+  }
+
+  function drawStarfield() {
+    const w = gen.width, h = gen.height;
+    if (!starParticles) {
+      starParticles = [];
+      for (let i = 0; i < 200; i++) {
+        starParticles.push({ a: Math.random() * Math.PI * 2, r: Math.random() * 300, speed: 0.5 + Math.random() * 1.5, hue: Math.random() * 360 });
+      }
+    }
+    gctx.fillStyle = 'rgba(0,0,4,0.35)';
+    gctx.fillRect(0, 0, w, h);
+    const cx = w / 2, cy = h / 2;
+    const maxR = Math.sqrt(cx * cx + cy * cy);
+    for (const s of starParticles) {
+      const x0 = cx + Math.cos(s.a) * s.r;
+      const y0 = cy + Math.sin(s.a) * s.r;
+      s.r += s.speed * 1.6 * state.genSpeed;
+      if (s.r > maxR) { s.r = 0; s.a = Math.random() * Math.PI * 2; s.hue = Math.random() * 360; }
+      const x1 = cx + Math.cos(s.a) * s.r;
+      const y1 = cy + Math.sin(s.a) * s.r;
+      const bright = Math.min(1, s.r / maxR * 1.4);
+      gctx.strokeStyle = `hsla(${s.hue},90%,${55 + bright * 30}%,${0.4 + bright * 0.6})`;
+      gctx.lineWidth = 1 + bright * 2;
+      gctx.beginPath();
+      gctx.moveTo(x0, y0);
+      gctx.lineTo(x1, y1);
+      gctx.stroke();
+    }
+  }
+
+  function drawMetaballs(t) {
+    const w = gen.width, h = gen.height;
+    gctx.fillStyle = '#020206';
+    gctx.fillRect(0, 0, w, h);
+    gctx.globalCompositeOperation = 'lighter';
+    const n = 6;
+    for (let i = 0; i < n; i++) {
+      const a = t * (0.5 + i * 0.17) + i * 2.1;
+      const x = w / 2 + Math.cos(a) * w * 0.28 * (0.5 + 0.5 * Math.sin(t * 0.3 + i));
+      const y = h / 2 + Math.sin(a * 1.3) * h * 0.28 * (0.5 + 0.5 * Math.cos(t * 0.4 + i));
+      const r = 40 + 20 * Math.sin(t * 1.5 + i);
+      const hue = (t * 30 + i * 55) % 360;
+      const grad = gctx.createRadialGradient(x, y, 0, x, y, r);
+      grad.addColorStop(0, `hsla(${hue},100%,65%,0.9)`);
+      grad.addColorStop(0.6, `hsla(${hue},100%,55%,0.35)`);
+      grad.addColorStop(1, `hsla(${hue},100%,50%,0)`);
+      gctx.fillStyle = grad;
+      gctx.beginPath();
+      gctx.arc(x, y, r, 0, Math.PI * 2);
+      gctx.fill();
+    }
+    gctx.globalCompositeOperation = 'source-over';
+  }
+
+  function drawGenerator(t) {
+    switch (state.genPattern) {
+      case 'plasma': drawPlasma(t); break;
+      case 'orbits': drawOrbits(t); break;
+      case 'noise': drawNoiseGrid(t); break;
+      case 'rays': drawRays(t); break;
+      case 'flow': drawFlowField(t); break;
+      case 'kaleido': drawKaleido(t); break;
+      case 'ca': drawCA(t); break;
+      case 'starfield': drawStarfield(t); break;
+      case 'metaballs': drawMetaballs(t); break;
+    }
+  }
+
+  function drawCoverFit(ctx, el, sw, sh, w, h, rotationDeg) {
+    rotationDeg = rotationDeg || 0;
+    let targetW = w, targetH = h;
+    if (rotationDeg % 180 !== 0) { targetW = h; targetH = w; }
+    const scale = Math.max(targetW / sw, targetH / sh);
+    const dw = sw * scale, dh = sh * scale;
+    ctx.save();
+    ctx.translate(w / 2, h / 2);
+    if (rotationDeg) ctx.rotate(rotationDeg * Math.PI / 180);
+    ctx.drawImage(el, -dw / 2, -dh / 2, dw, dh);
+    ctx.restore();
+  }
+
+  function currentFilterString() {
+    return `hue-rotate(${hueAngle}deg) saturate(${state.sat}%) contrast(${state.con}%) brightness(${state.bri}%) ${state.invert ? 'invert(1)' : ''}`;
+  }
+
+  // ---------- Kaleidoscope mirror (post-transform, feeds back into the buffer) ----------
+  function applyKaleidoMirror(srcCanvas) {
+    const w = buf.width, h = buf.height;
+    const segments = Math.max(2, Math.round(state.kSegments));
+    const cx = w / 2 + state.kFocusX, cy = h / 2 + state.kFocusY;
+    fxTime += 0.016;
+    const rotation = fxTime * state.kSpin;
+    const R = Math.max(w, h) * 1.5;
+    const angleStep = (Math.PI * 2) / segments;
+    kctx.clearRect(0, 0, w, h);
+    kctx.save();
+    kctx.translate(cx, cy);
+    for (let i = 0; i < segments; i++) {
+      kctx.save();
+      kctx.rotate(angleStep * i + rotation);
+      kctx.beginPath();
+      kctx.moveTo(0, 0);
+      kctx.arc(0, 0, R, -angleStep / 2 - 0.01, angleStep / 2 + 0.01);
+      kctx.closePath();
+      kctx.clip();
+      if (i % 2 === 1) kctx.scale(1, -1);
+      kctx.drawImage(srcCanvas, -cx, -cy, w, h);
+      kctx.restore();
+    }
+    kctx.restore();
+    return kTemp;
+  }
+
+  // ---------- Glitch FX (post effect on the visible output only) ----------
+  const burstPool = ['rgbShift', 'blockShift', 'scanlines', 'staticNoise', 'invertFlash'];
+  const fxBurst = { framesLeft: 0, effects: new Set() };
+
+  function triggerBurst() {
+    fxBurst.effects.clear();
+    const pool = [...burstPool];
+    const count = 1 + Math.floor(Math.random() * 2);
+    for (let i = 0; i < count; i++) {
+      const idx = Math.floor(Math.random() * pool.length);
+      fxBurst.effects.add(pool.splice(idx, 1)[0]);
+    }
+    fxBurst.framesLeft = 4 + Math.floor(Math.random() * 14);
+  }
+
+  function applyRGBShift() {
+    const w = out.width, h = out.height;
+    const off = Math.round(4 + state.glitchIntensity * 22);
+    const jitter = () => Math.round((Math.random() - 0.5) * 6);
+
+    chRctx.clearRect(0, 0, w, h); chRctx.drawImage(buf, 0, 0, w, h);
+    chRctx.globalCompositeOperation = 'multiply'; chRctx.fillStyle = 'rgb(255,40,40)'; chRctx.fillRect(0, 0, w, h); chRctx.globalCompositeOperation = 'source-over';
+
+    chGctx.clearRect(0, 0, w, h); chGctx.drawImage(buf, 0, 0, w, h);
+    chGctx.globalCompositeOperation = 'multiply'; chGctx.fillStyle = 'rgb(40,255,40)'; chGctx.fillRect(0, 0, w, h); chGctx.globalCompositeOperation = 'source-over';
+
+    chBctx.clearRect(0, 0, w, h); chBctx.drawImage(buf, 0, 0, w, h);
+    chBctx.globalCompositeOperation = 'multiply'; chBctx.fillStyle = 'rgb(40,40,255)'; chBctx.fillRect(0, 0, w, h); chBctx.globalCompositeOperation = 'source-over';
+
+    octx.save();
+    octx.filter = currentFilterString();
+    octx.fillStyle = '#000';
+    octx.fillRect(0, 0, w, h);
+    octx.globalCompositeOperation = 'lighter';
+    octx.drawImage(chR, -off, jitter());
+    octx.drawImage(chG, 0, 0);
+    octx.drawImage(chB, off, jitter());
+    octx.restore();
+  }
+
+  function applyInvertFlash() {
+    const w = out.width, h = out.height;
+    octx.save();
+    octx.filter = currentFilterString() + ' invert(1)';
+    octx.clearRect(0, 0, w, h);
+    octx.drawImage(buf, 0, 0, w, h);
+    octx.restore();
+  }
+
+  function applyBlockShift() {
+    const w = out.width, h = out.height;
+    const bands = 3 + Math.floor(state.glitchIntensity * 6);
+    octx.save();
+    octx.filter = currentFilterString();
+    for (let i = 0; i < bands; i++) {
+      const bh = 6 + Math.random() * (h * 0.08);
+      const by = Math.random() * (h - bh);
+      const shift = Math.round((Math.random() - 0.5) * 2 * (20 + state.glitchIntensity * 160));
+      octx.drawImage(buf, 0, by, w, bh, shift, by, w, bh);
+    }
+    octx.restore();
+  }
+
+  function applyScanlines() {
+    const w = out.width, h = out.height;
+    octx.save();
+    octx.fillStyle = '#000';
+    octx.globalAlpha = 0.15 + state.glitchIntensity * 0.25;
+    for (let y = 0; y < h; y += 3) octx.fillRect(0, y, w, 1);
+    if (Math.random() < 0.3) {
+      octx.globalAlpha = 0.4;
+      octx.fillStyle = '#fff';
+      octx.fillRect(0, Math.random() * h, w, 2);
+    }
+    octx.restore();
+  }
+
+  function applyStaticNoise() {
+    const nd = noiseImg.data;
+    for (let i = 0; i < nd.length; i += 4) {
+      const v = Math.random() * 255;
+      nd[i] = v; nd[i + 1] = v; nd[i + 2] = v; nd[i + 3] = 255;
+    }
+    ntx.putImageData(noiseImg, 0, 0);
+    octx.save();
+    octx.globalAlpha = 0.1 + state.glitchIntensity * 0.35;
+    octx.globalCompositeOperation = 'overlay';
+    octx.drawImage(noiseTex, 0, 0, out.width, out.height);
+    octx.restore();
+  }
+
+  function applyPosterize() {
+    const w = out.width, h = out.height;
+    const levels = Math.max(2, Math.round(state.gPosterizeLevels));
+    const step = 255 / (levels - 1);
+    const imgData = octx.getImageData(0, 0, w, h);
+    const d = imgData.data;
+    for (let i = 0; i < d.length; i += 4) {
+      d[i] = Math.round(Math.round(d[i] / step) * step);
+      d[i + 1] = Math.round(Math.round(d[i + 1] / step) * step);
+      d[i + 2] = Math.round(Math.round(d[i + 2] / step) * step);
+    }
+    octx.putImageData(imgData, 0, 0);
+  }
+
+  function applyGlitchStage() {
+    if (!state.glitchOn) return;
+
+    if (state.glitchAuto && fxBurst.framesLeft <= 0 && Math.random() < state.glitchAutoRate * 0.06) {
+      triggerBurst();
+    }
+    if (fxBurst.framesLeft > 0) {
+      fxBurst.framesLeft--;
+      if (fxBurst.framesLeft <= 0) fxBurst.effects.clear();
+    }
+
+    const active = new Set();
+    if (state.gRgb) active.add('rgbShift');
+    if (state.gBlock) active.add('blockShift');
+    if (state.gScan) active.add('scanlines');
+    if (state.gStatic) active.add('staticNoise');
+    if (state.gPosterize) active.add('posterize');
+    fxBurst.effects.forEach(e => active.add(e));
+    if (active.size === 0) return;
+
+    if (active.has('rgbShift')) applyRGBShift();
+    else if (active.has('invertFlash')) applyInvertFlash();
+
+    if (active.has('blockShift')) applyBlockShift();
+    if (active.has('scanlines')) applyScanlines();
+    if (active.has('staticNoise')) applyStaticNoise();
+    if (active.has('posterize')) applyPosterize();
+  }
+
+  // ---------- Main loop ----------
+  function loop() {
+    if (!running) return;
+
+    updateAudioLevels();
+    const now = performance.now();
+    const dt = Math.min(0.05, (now - lastFrameTime) / 1000);
+    lastFrameTime = now;
+    const av = currentAudioValue() * state.audioSens;
+    const lfoValues = currentLfoValues(dt);
+    const mod = (aFlag, key) => (aFlag ? av : 0) + sumLfoFor(key, lfoValues);
+
+    const orig = {
+      zoom: state.zoom, rot: state.rot, decay: state.decay, mix: state.mix,
+      hueSpeed: state.hueSpeed, kSpin: state.kSpin, genSpeed: state.genSpeed,
+      glitchIntensity: state.glitchIntensity,
+      ox: state.ox, oy: state.oy, sat: state.sat, con: state.con, bri: state.bri,
+      kSegments: state.kSegments, kFocusX: state.kFocusX, kFocusY: state.kFocusY
+    };
+    state.zoom = clamp(orig.zoom + mod(state.aZoom, 'zoom') * 0.5, 0.5, 1.6);
+    state.rot = orig.rot + mod(state.aRot, 'rot') * 8;
+    state.decay = clamp01(orig.decay + mod(state.aDecay, 'decay') * 0.15);
+    state.mix = clamp01(orig.mix + mod(state.aMix, 'mix') * 0.6);
+    state.hueSpeed = orig.hueSpeed + mod(state.aHue, 'hue') * 15;
+    state.kSpin = orig.kSpin + mod(state.aKaleido, 'kaleido') * 4;
+    state.genSpeed = Math.max(0.05, orig.genSpeed + mod(state.aGenSpeed, 'genSpeed') * 3);
+    state.glitchIntensity = clamp01(orig.glitchIntensity + mod(state.aGlitch, 'glitch') * 0.6);
+    state.ox = clamp(orig.ox + sumLfoFor('ox', lfoValues) * 20, -80, 80);
+    state.oy = clamp(orig.oy + sumLfoFor('oy', lfoValues) * 20, -80, 80);
+    state.sat = clamp(orig.sat + sumLfoFor('sat', lfoValues) * 80, 0, 400);
+    state.con = clamp(orig.con + sumLfoFor('con', lfoValues) * 60, 20, 300);
+    state.bri = clamp(orig.bri + sumLfoFor('bri', lfoValues) * 50, 10, 250);
+    state.kSegments = Math.max(2, Math.round(orig.kSegments + sumLfoFor('kSeg', lfoValues) * 4));
+    state.kFocusX = clamp(orig.kFocusX + sumLfoFor('kFocusX', lfoValues) * 80, -300, 300);
+    state.kFocusY = clamp(orig.kFocusY + sumLfoFor('kFocusY', lfoValues) * 80, -300, 300);
+
+    if (!frozen) {
+      const w = buf.width, h = buf.height;
+
+      // 1. Draw transformed previous buffer into scratch (this is the "feedback")
+      sctx.save();
+      sctx.clearRect(0, 0, w, h);
+      sctx.translate(w / 2 + state.ox, h / 2 + state.oy);
+      sctx.rotate(state.rot * Math.PI / 180);
+      sctx.scale(state.zoom, state.zoom);
+      sctx.translate(-w / 2, -h / 2);
+      sctx.globalAlpha = state.decay;
+      sctx.drawImage(buf, 0, 0, w, h);
+      sctx.restore();
+
+      // 2. Composite the live source (camera or generator) on top
+      let srcEl = null, sw = 0, sh = 0;
+
+      if (sourceMode === 'camera' && camReady && video.readyState >= 2) {
+        srcEl = video; sw = video.videoWidth; sh = video.videoHeight;
+      } else if (sourceMode === 'generator') {
+        genTime += 0.016 * state.genSpeed;
+        drawGenerator(genTime);
+        srcEl = gen; sw = gen.width; sh = gen.height;
+      }
+
+      if (srcEl && sw && sh) {
+        sctx.save();
+        sctx.globalAlpha = state.mix;
+        sctx.globalCompositeOperation = state.blend;
+        if (mirrored && sourceMode === 'camera') {
+          sctx.translate(w, 0);
+          sctx.scale(-1, 1);
+        }
+        drawCoverFit(sctx, srcEl, sw, sh, w, h, state.srcRotation);
+        sctx.restore();
+      }
+
+      // 3. Composite any uploaded image/video layers on top, in order
+      for (const layer of layers) {
+        if (!layer.visible) continue;
+        const el = layer.el;
+        let lw = 0, lh = 0, ready = false;
+        if (layer.type === 'image') {
+          lw = el.naturalWidth; lh = el.naturalHeight; ready = el.complete && lw > 0;
+        } else {
+          lw = el.videoWidth; lh = el.videoHeight; ready = el.readyState >= 2 && lw > 0;
+        }
+        if (!ready) continue;
+        sctx.save();
+        if (layer.audioReact || layer.lfo) {
+          const lm = (layer.audioReact ? av : 0) + (layer.lfo ? layerLfoValue(layer, dt) : 0);
+          sctx.globalAlpha = clamp01(layer.opacity + lm * 0.7);
+          const s = 1 + lm * 0.25;
+          sctx.translate(w / 2, h / 2);
+          sctx.scale(s, s);
+          sctx.translate(-w / 2, -h / 2);
+        } else {
+          sctx.globalAlpha = layer.opacity;
+        }
+        sctx.globalCompositeOperation = layer.blend;
+        drawCoverFit(sctx, el, lw, lh, w, h, layer.rotation);
+        sctx.restore();
+      }
+
+      // 4. Optionally fold the composite through the kaleidoscope mirror, then
+      //    that becomes the new persisting buffer (so it recursively compounds)
+      const finalScratch = state.kaleidoOn ? applyKaleidoMirror(scratch) : scratch;
+      bctx.clearRect(0, 0, w, h);
+      bctx.drawImage(finalScratch, 0, 0);
+    }
+
+    // 5. Push buffer to the visible output canvas with color styling
+    hueAngle = (hueAngle + state.hueSpeed) % 360;
+    octx.save();
+    octx.filter = currentFilterString();
+    octx.clearRect(0, 0, out.width, out.height);
+    octx.drawImage(buf, 0, 0);
+    octx.restore();
+
+    // 6. Glitch FX overlay (does not feed back into the persisting buffer)
+    applyGlitchStage();
+
+    // Restore base (slider) values — audio/LFO modulation above was temporary for this frame only
+    state.zoom = orig.zoom; state.rot = orig.rot; state.decay = orig.decay; state.mix = orig.mix;
+    state.hueSpeed = orig.hueSpeed; state.kSpin = orig.kSpin; state.genSpeed = orig.genSpeed;
+    state.glitchIntensity = orig.glitchIntensity;
+    state.ox = orig.ox; state.oy = orig.oy; state.sat = orig.sat; state.con = orig.con; state.bri = orig.bri;
+    state.kSegments = orig.kSegments; state.kFocusX = orig.kFocusX; state.kFocusY = orig.kFocusY;
+
+    requestAnimationFrame(loop);
+  }
+
+  // seed buffer with black
+  bctx.fillStyle = '#000';
+  bctx.fillRect(0, 0, buf.width, buf.height);
+})();
+</script>
+</body>
+</html>
